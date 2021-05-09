@@ -29,11 +29,11 @@ import java.util.Optional;
 
 public class SegmentImpl implements Segment {
 
-    private String name;
+    private final String name;
     private long freeSize;
-    private Path rootPath;
+    private final Path rootPath;
     private boolean isReadOnly = false;
-    private SegmentIndex index;
+    private final SegmentIndex index;
     private static final long SEGMENT_SIZE = 100_000;
 
     private SegmentImpl(String name, Path rootPath, long freeSize, SegmentIndex index) {

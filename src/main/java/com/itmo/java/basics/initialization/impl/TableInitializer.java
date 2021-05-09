@@ -1,11 +1,13 @@
 package com.itmo.java.basics.initialization.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
+import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
 import com.itmo.java.basics.logic.impl.TableImpl;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -45,7 +47,7 @@ public class TableInitializer implements Initializer {
 
         for (File i : list) {
             var segmentContext = new SegmentInitializationContextImpl(i.getName(),
-                    tableContext.getTablePath(), 0);
+                    Paths.get(tableContext.getTablePath().toString(), i.getName()), 0, new SegmentIndex());
 
             segmentInitializer.perform(InitializationContextImpl.builder()
                     .currentTableContext(tableContext)
