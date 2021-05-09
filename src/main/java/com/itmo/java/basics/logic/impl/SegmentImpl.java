@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-
 /**
  * Сегмент - append-only файл, хранящий пары ключ-значение, разделенные специальным символом.
  * - имеет ограниченный размер, большие значения (>100000) записываются в последний сегмент, если он не read-only
@@ -37,7 +36,14 @@ public class SegmentImpl implements Segment {
     private SegmentIndex index;
     private static final long SEGMENT_SIZE = 100_000;
 
-    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    private SegmentImpl(String name, Path rootPath, long freeSize, SegmentIndex index) {
+        this.name = name;
+        this.rootPath = rootPath;
+        this.freeSize = freeSize;
+        this.index = index;
+    }
+
+    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
         Path path = Paths.get(tableRootPath.toString(), segmentName);
 
@@ -52,17 +58,22 @@ public class SegmentImpl implements Segment {
                     path.toString()), e);
         }
 
-        SegmentImpl s = new SegmentImpl();
-        s.name = segmentName;
-        s.rootPath = tableRootPath;
-        s.freeSize = SEGMENT_SIZE;
-        s.index = new SegmentIndex();
-
-        return s;
+        return new SegmentImpl(segmentName, tableRootPath, SEGMENT_SIZE, new SegmentIndex());
     }
 
     public static Segment initializeFromContext(SegmentInitializationContext context) {
-        return null;
+        var segment = new SegmentImpl(
+                context.getSegmentName(),
+                context.getSegmentPath().getParent(),
+                SEGMENT_SIZE - context.getCurrentSize(),
+                context.getIndex()
+        );
+
+        if(segment.freeSize <= 0) {
+            segment.isReadOnly = true;
+        }
+
+        return segment;
     }
 
     static String createSegmentName(String tableName) {
@@ -121,7 +132,7 @@ public class SegmentImpl implements Segment {
 
         RemoveDatabaseRecord dbr = new RemoveDatabaseRecord(objectKey.getBytes());
 
-        return writeToFile(dbr, null);
+        return writeToFile(dbr, new SegmentOffsetInfoImpl(SEGMENT_SIZE - freeSize));
     }
 
     private boolean writeToFile(WritableDatabaseRecord dbr, SegmentOffsetInfoImpl soi) throws IOException {

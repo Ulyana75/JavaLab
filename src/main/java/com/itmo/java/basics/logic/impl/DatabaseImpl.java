@@ -17,9 +17,15 @@ import java.util.Optional;
 
 public class DatabaseImpl implements Database {
 
-    private Path rootPath;
-    private String name;
-    private final Map<String, Table> tables = new HashMap<>();
+    private final Path rootPath;
+    private final String name;
+    private final Map<String, Table> tables;
+
+    private DatabaseImpl(Path rootPath, String name, Map<String, Table> tables) {
+        this.rootPath = rootPath;
+        this.name = name;
+        this.tables = tables;
+    }
 
     /**
      * @param databaseRoot путь к директории, которая может содержать несколько БД,
@@ -44,15 +50,16 @@ public class DatabaseImpl implements Database {
                     path.toString()), e);
         }
 
-        DatabaseImpl db = new DatabaseImpl();
-        db.name = dbName;
-        db.rootPath = databaseRoot;
-
-        return db;
+        return new DatabaseImpl(databaseRoot, dbName, new HashMap<>());
     }
 
     public static Database initializeFromContext(DatabaseInitializationContext context) {
-        return null;
+
+        return new DatabaseImpl(
+                context.getDatabasePath().getParent(),
+                context.getDbName(),
+                context.getTables()
+        );
     }
 
     @Override

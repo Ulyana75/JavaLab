@@ -26,9 +26,16 @@ public class TableImpl implements Table {
     private TableIndex index;
     private String name;
     private Path rootPath;
-    private Segment currentSegment = null;
+    private Segment currentSegment;
 
-    static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
+    private TableImpl(String name, Path rootPath, TableIndex index, Segment currentSegment) {
+        this.name = name;
+        this.rootPath = rootPath;
+        this.index = index;
+        this.currentSegment = currentSegment;
+    }
+
+    public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
 
         Path path = Paths.get(pathToDatabaseRoot.toString(), tableName);
 
@@ -43,17 +50,25 @@ public class TableImpl implements Table {
                     path.toString()), e);
         }
 
-        TableImpl t = new TableImpl();
-        t.name = tableName;
-        t.rootPath = pathToDatabaseRoot;
-        t.index = tableIndex;
-        t.currentSegment = SegmentImpl.create(SegmentImpl.createSegmentName(t.name), path);
+        TableImpl t = new TableImpl(
+                tableName,
+                pathToDatabaseRoot,
+                tableIndex,
+                SegmentImpl.create(SegmentImpl.createSegmentName(tableName), path)
+        );
 
-        return t;
+        return new CachingTable(t);
     }
 
     public static Table initializeFromContext(TableInitializationContext context) {
-        return null;
+        var table = new TableImpl(
+                context.getTableName(),
+                context.getTablePath().getParent(),
+                context.getTableIndex(),
+                context.getCurrentSegment()
+        );
+
+        return new CachingTable(table);
     }
 
     @Override

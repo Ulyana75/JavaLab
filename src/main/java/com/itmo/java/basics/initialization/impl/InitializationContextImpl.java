@@ -5,7 +5,10 @@ import com.itmo.java.basics.initialization.DatabaseInitializationContext;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.SegmentInitializationContext;
 import com.itmo.java.basics.initialization.TableInitializationContext;
+import lombok.Builder;
+import lombok.Getter;
 
+@Builder
 public class InitializationContextImpl implements InitializationContext {
 
     private final ExecutionEnvironment executionEnvironment;
@@ -14,9 +17,9 @@ public class InitializationContextImpl implements InitializationContext {
     private final SegmentInitializationContext currentSegmentContext;
 
     public InitializationContextImpl(ExecutionEnvironment executionEnvironment,
-                                      DatabaseInitializationContext currentDatabaseContext,
-                                      TableInitializationContext currentTableContext,
-                                      SegmentInitializationContext currentSegmentContext) {
+                                     DatabaseInitializationContext currentDatabaseContext,
+                                     TableInitializationContext currentTableContext,
+                                     SegmentInitializationContext currentSegmentContext) {
         this.executionEnvironment = executionEnvironment;
         this.currentDatabaseContext = currentDatabaseContext;
         this.currentTableContext = currentTableContext;
