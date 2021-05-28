@@ -3,9 +3,13 @@ package com.itmo.java.basics.logic.impl;
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.initialization.TableInitializationContext;
+import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -18,8 +22,34 @@ import java.util.Optional;
  * и хранящую файлы-сегменты данной таблицы
  */
 public class TableImpl implements Table {
+
+    private TableIndex index;
+    private String name;
+    private Path rootPath;
+    private Segment currentSegment = null;
+
     static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
-        return null;
+
+        Path path = Paths.get(pathToDatabaseRoot.toString(), tableName);
+
+        if (Files.exists(path)) {
+            throw new DatabaseException(String.format("Table with name \"%s\" already exists!", tableName));
+        }
+
+        try {
+            Files.createDirectory(path);
+        } catch (IOException e) {
+            throw new DatabaseException(String.format("Something gone wrong while creating directory %s!",
+                    path.toString()), e);
+        }
+
+        TableImpl t = new TableImpl();
+        t.name = tableName;
+        t.rootPath = pathToDatabaseRoot;
+        t.index = tableIndex;
+        t.currentSegment = SegmentImpl.create(SegmentImpl.createSegmentName(t.name), path);
+
+        return t;
     }
 
     public static Table initializeFromContext(TableInitializationContext context) {
@@ -28,21 +58,59 @@ public class TableImpl implements Table {
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
 
     @Override
     public void write(String objectKey, byte[] objectValue) throws DatabaseException {
 
+        try {
+            boolean success = currentSegment.write(objectKey, objectValue);
+
+            if (!success) {
+                currentSegment = SegmentImpl.create(SegmentImpl.createSegmentName(name),
+                        Paths.get(rootPath.toString(), name));
+                currentSegment.write(objectKey, objectValue);
+            }
+
+            index.onIndexedEntityUpdated(objectKey, currentSegment);
+        } catch (IOException e) {
+            throw new DatabaseException("Something gone wrong while writing!", e);
+        }
     }
 
     @Override
     public Optional<byte[]> read(String objectKey) throws DatabaseException {
-        return Optional.empty();
+
+        Optional<Segment> s = index.searchForKey(objectKey);
+        Optional<byte[]> value = Optional.empty();
+
+        if (s.isPresent()) {
+            try {
+                value = s.get().read(objectKey);
+            } catch (IOException e) {
+                throw new DatabaseException("Something gone wrong while reading!", e);
+            }
+        }
+
+        return value;
     }
 
     @Override
     public void delete(String objectKey) throws DatabaseException {
 
+        try {
+            boolean success = currentSegment.delete(objectKey);
+
+            if (!success) {
+                currentSegment = SegmentImpl.create(SegmentImpl.createSegmentName(name),
+                        Paths.get(rootPath.toString(), name));
+                currentSegment.delete(objectKey);
+            }
+
+            index.onIndexedEntityUpdated(objectKey, null);
+        } catch (IOException e) {
+            throw new DatabaseException("Something gone wrong while deleting!", e);
+        }
     }
 }

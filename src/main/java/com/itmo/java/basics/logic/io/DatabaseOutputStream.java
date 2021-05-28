@@ -17,9 +17,7 @@ public class DatabaseOutputStream extends DataOutputStream {
 
     /**
      * Записывает в БД в следующем формате:
-<<<<<<< HEAD
      * - Размер ключа в байтах используя {@link WritableDatabaseRecord#getKeySize()}
-=======
      * - Размер ключа в байтах, используя {@link WritableDatabaseRecord#getKeySize()}
      * - Ключ
      * - Размер записи в байтах {@link WritableDatabaseRecord#getValueSize()}
@@ -34,6 +32,18 @@ public class DatabaseOutputStream extends DataOutputStream {
      * @throws IOException если запись не удалась
      */
     public int write(WritableDatabaseRecord databaseRecord) throws IOException {
-        return 0;
+
+        int keySize = databaseRecord.getKeySize();
+        int valueSize = databaseRecord.getValueSize();
+
+        writeInt(keySize);
+        write(databaseRecord.getKey());
+        writeInt(valueSize);
+        if (databaseRecord.isValuePresented()) {
+            write(databaseRecord.getValue());
+        }
+
+        return databaseRecord.getKeySize() + databaseRecord.getValueSize() + String.valueOf(keySize).length()
+                + String.valueOf(valueSize).length();
     }
 }
