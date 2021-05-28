@@ -1,5 +1,7 @@
 package com.itmo.java.basics.logic;
 
+import com.itmo.java.basics.exceptions.DatabaseException;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -25,8 +27,9 @@ public interface Segment {
      * @param objectValue значение, которое нужно записать
      * @return {@code true} - если значение записалось, {@code false} - если нет
      * @throws IOException если произошла ошибка ввода-вывода.
+     * @throws DatabaseException
      */
-    boolean write(String objectKey, byte[] objectValue) throws IOException;
+    boolean write(String objectKey, byte[] objectValue) throws IOException, DatabaseException;
 
     /**
      * Считывает значение из сегмента по переданному ключу.

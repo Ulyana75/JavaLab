@@ -17,7 +17,10 @@ public class DatabaseOutputStream extends DataOutputStream {
 
     /**
      * Записывает в БД в следующем формате:
+<<<<<<< HEAD
      * - Размер ключа в байтах используя {@link WritableDatabaseRecord#getKeySize()}
+=======
+     * - Размер ключа в байтах, используя {@link WritableDatabaseRecord#getKeySize()}
      * - Ключ
      * - Размер записи в байтах {@link WritableDatabaseRecord#getValueSize()}
      * - Запись

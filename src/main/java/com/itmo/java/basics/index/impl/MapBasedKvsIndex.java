@@ -11,7 +11,12 @@ public class MapBasedKvsIndex<K, V> implements KvsIndex<K, V> {
 
     @Override
     public void onIndexedEntityUpdated(K key, V value) {
-        index.put(key, value);
+        if(value != null) {
+            index.put(key, value);
+        }
+        else {
+            index.remove(key);
+        }
     }
 
     @Override
