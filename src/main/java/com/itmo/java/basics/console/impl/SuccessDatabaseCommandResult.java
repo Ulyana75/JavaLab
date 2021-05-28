@@ -9,14 +9,18 @@ import com.itmo.java.protocol.model.RespObject;
  */
 public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
 
+    private final byte[] data;
+
     public SuccessDatabaseCommandResult(byte[] payload) {
-        //TODO implement
+        data = payload;
     }
 
     @Override
     public String getPayLoad() {
-        //TODO implement
-        return null;
+        if (data == null) {
+            return null;
+        }
+        return new String(data);
     }
 
     @Override
@@ -29,7 +33,6 @@ public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public RespObject serialize() {
-        //TODO implement
-        return null;
+        return new RespBulkString(data);
     }
 }

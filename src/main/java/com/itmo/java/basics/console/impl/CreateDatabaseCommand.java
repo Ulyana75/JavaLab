@@ -4,6 +4,7 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.DatabaseFactory;
 import com.itmo.java.protocol.model.RespObject;
 
@@ -13,6 +14,12 @@ import java.util.List;
  * Команда для создания базы данных
  */
 public class CreateDatabaseCommand implements DatabaseCommand {
+
+    private static final int ARGUMENTS_QUANTITY = 3;
+
+    private final ExecutionEnvironment env;
+    private final DatabaseFactory factory;
+    private final List<RespObject> commandArgs;
 
     /**
      * Создает команду.
@@ -26,7 +33,12 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public CreateDatabaseCommand(ExecutionEnvironment env, DatabaseFactory factory, List<RespObject> commandArgs) {
-        //TODO implement
+        if (commandArgs.size() != ARGUMENTS_QUANTITY) {
+            throw new IllegalArgumentException("Wrong quantity of command's arguments!");
+        }
+        this.env = env;
+        this.factory = factory;
+        this.commandArgs = commandArgs;
     }
 
     /**
@@ -36,7 +48,13 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        try {
+            String databaseName = commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+            Database database = factory.createNonExistent(databaseName, env.getWorkingPath());
+            env.addDatabase(database);
+            return DatabaseCommandResult.success(String.format("Database %s was created", databaseName).getBytes());
+        } catch (Exception e) {
+            return DatabaseCommandResult.error(e);
+        }
     }
 }

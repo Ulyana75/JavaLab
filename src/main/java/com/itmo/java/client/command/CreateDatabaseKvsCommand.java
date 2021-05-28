@@ -4,11 +4,17 @@ import com.itmo.java.protocol.model.RespArray;
 import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespCommandId;
 
+import java.awt.*;
+import java.util.List;
+
 /**
  * Команда для создания бд
  */
 public class CreateDatabaseKvsCommand implements KvsCommand {
     private static final String COMMAND_NAME = "CREATE_DATABASE";
+
+    private final String databaseName;
+    private final int commandId;
 
     /**
      * Создает объект
@@ -16,7 +22,8 @@ public class CreateDatabaseKvsCommand implements KvsCommand {
      * @param databaseName имя базы данных
      */
     public CreateDatabaseKvsCommand(String databaseName) {
-        //TODO implement
+        this.databaseName = databaseName;
+        commandId = idGen.getAndIncrement();
     }
 
     /**
@@ -26,13 +33,15 @@ public class CreateDatabaseKvsCommand implements KvsCommand {
      */
     @Override
     public RespArray serialize() {
-        //TODO implement
-        return null;
+        return new RespArray(
+                new RespCommandId(commandId),
+                new RespBulkString(COMMAND_NAME.getBytes()),
+                new RespBulkString(databaseName.getBytes())
+        );
     }
 
     @Override
     public int getCommandId() {
-        //TODO implement
-        return 0;
+        return commandId;
     }
 }
