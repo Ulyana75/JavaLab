@@ -39,7 +39,7 @@ public class TableInitializer implements Initializer {
 
         var listFiles = file.listFiles();
         if (listFiles == null) {
-            throw new DatabaseException(String.format("Found a file, not a directory on path %s", file.toString()));
+            return;
         }
 
         var list = Arrays.asList(listFiles);

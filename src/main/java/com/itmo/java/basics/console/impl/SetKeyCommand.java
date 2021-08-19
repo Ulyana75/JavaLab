@@ -58,7 +58,7 @@ public class SetKeyCommand implements DatabaseCommand {
             String value = commandArgs.get(DatabaseCommandArgPositions.VALUE.getPositionIndex()).asString();
             Optional<byte[]> previousValue = database.read(tableName, key);
             database.write(tableName, key, value.getBytes());
-            return previousValue.map(DatabaseCommandResult::success).orElse(null);
+            return previousValue.map(DatabaseCommandResult::success).orElseGet(() -> DatabaseCommandResult.success(null));
         } catch (Exception e) {
             return DatabaseCommandResult.error(e);
         }

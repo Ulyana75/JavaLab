@@ -56,7 +56,7 @@ public class GetKeyCommand implements DatabaseCommand {
             String tableName = commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString();
             String key = commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString();
             Optional<byte[]> value = database.read(tableName, key);
-            return value.map(DatabaseCommandResult::success).orElse(null);
+            return value.map(DatabaseCommandResult::success).orElseGet(() -> DatabaseCommandResult.success(null));
         } catch (Exception e) {
             return DatabaseCommandResult.error(e);
         }

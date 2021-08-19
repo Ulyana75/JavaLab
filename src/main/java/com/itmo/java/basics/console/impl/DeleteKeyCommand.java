@@ -57,7 +57,8 @@ public class DeleteKeyCommand implements DatabaseCommand {
             String key = commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString();
             Optional<byte[]> previousValue = database.read(tableName, key);
             database.delete(tableName, key);
-            return previousValue.map(DatabaseCommandResult::success).orElse(null);
+            return previousValue.map(DatabaseCommandResult::success).orElseGet(() ->
+                    DatabaseCommandResult.error("Nothing to delete: no such key " + key));
         } catch (Exception e) {
             return DatabaseCommandResult.error(e);
         }
